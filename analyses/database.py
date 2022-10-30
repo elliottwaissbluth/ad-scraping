@@ -2,6 +2,7 @@ import sqlite3
 from sqlite3 import Error
 import datetime
 from pathlib import Path
+import pandas as pd
 
 def create_connection(db_file):
     '''Creates a connection with the database (scrapes.db)
@@ -21,16 +22,16 @@ def create_connection(db_file):
     return None
 
 def create_table(conn, create_table_sql):
-    '''Creates a table using create_table_sql. Note that the table you create
-    should be titled "ads"
+    '''Creates a table using create_table_sql.
     
     Args:
         conn (sqlite3 connection): connection to database
         create_table_sql (str): SQL to create table in database
     '''
     try:
-        c = conn.cursor()
-        c.execute(create_table_sql)
+        cur = conn.cursor()
+        cur.execute(create_table_sql)
+        cur.close()
     except Error as e:
         print(e)
 
@@ -126,4 +127,43 @@ def __get_sql_cols_and_vals_text(data):
     cols = cols[:-1] + ')'
     vals = vals[:-1] + ')'
     return cols, vals
+
+def print_table(db_file, table_name):
+    """Prints the table specified by db_file and table name using Pandas
     
+    Args:
+        db_file (path): Path to sqlite3 database (probably scrapes.db)
+        table_name (str): Name of table within database to print
+    """
+    conn = sqlite3.connect(str(db_file))
+    print(pd.read_sql_query(f'SELECT * FROM {table_name}', conn))
+    
+# ~~~~~~~~~~~~ exlusively utilized by process_scraped.py ~~~~~~~~~~~~
+
+def select_scrape_ids(conn):
+    """Gathers the set of scrape IDs present in the ads table. We will later
+    check these against the unique values of the scrape_id column in the 'homes'
+    table to see if any new postprocessing scrapes need to be initialized.
+    
+    Args:
+        conn (sqlite3 connection): Connection to scrapes.db
+        
+    Returns:
+        ids (Set(int)): Unique scrape IDs present in the "ads" table.
+            NOTE: each ID here corresponds to a single scrape of a single site
+    """
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT DISTINCT id FROM ads;
+        """
+    )
+    rows = cur.fetchall()
+
+    # get IDs as ints
+    ids = set(())
+    for row in rows:
+        ids.add(row[0])
+   
+    print(f'IDs present in "ads": {ids}') 
+    return ids
