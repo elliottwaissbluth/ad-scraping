@@ -1,10 +1,13 @@
 # Github PAT
 personal_access_token.txt
 
-# datadirs
+# datadirs, .gitkeep files are to keep the folders there
 datadir/*
+!datadir/.gitkeep
 analyses/sites/*
+!analyses/sites/.gitkeep
 analyses/temp/*
+!analyses/temp/.gitkeep
 scrapes.db
 
 # old stuff
