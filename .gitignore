@@ -2,7 +2,7 @@
 personal_access_token.txt
 
 # datadirs
-datadir/
+datadir/*
 analyses/sites/*
 analyses/temp/*
 scrapes.db
