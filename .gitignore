@@ -1,3 +1,16 @@
+# Github PAT
+personal_access_token.txt
+
+# datadirs
+datadir/
+analyses/sites/*
+analyses/temp/*
+scrapes.db
+
+# old stuff
+analyses/archive/
+archive/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
