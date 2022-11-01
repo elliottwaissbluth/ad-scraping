@@ -30,7 +30,6 @@ db_path = Path.cwd() / 'scrapes.db'
 conn = create_connection(db_path)
 
 row_data = select_row_from_ads(conn, 1)
-print(row_data)
 
 def create_queue_from_ads_row(row_data):
     """Takes the data from a row of "ads" and creates a list of URLs  and
@@ -49,9 +48,11 @@ def create_queue_from_ads_row(row_data):
     urls = []
     if row_data['adurls'] is not None:
         urls.extend(row_data['adurls'].split(' || '))
-        print(f'in create_q..: {urls}')
     if row_data['destinationUrl'] is not None:
         urls.extend(row_data['destinationUrl'].split(' || '))
+
+    # Remove duplicate URLs
+    urls = list(set(urls))
     
     # Create queue with descriptive data for each URL
     queue = [
@@ -62,8 +63,8 @@ def create_queue_from_ads_row(row_data):
             'url' : x    
         } for x in urls
     ]
-    print(queue)
     
     return queue
 
 queue = create_queue_from_ads_row(row_data)
+print(queue)
