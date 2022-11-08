@@ -2,7 +2,6 @@ import sqlite3
 from sqlite3 import Error
 import datetime
 from pathlib import Path
-import pandas as pd
 
 def create_connection(db_file):
     '''Creates a connection with the database (scrapes.db)
@@ -107,10 +106,63 @@ def insert_scrape(conn, date, name, source_file, screenshot_file, p_tag_text,
     cur.close()
     conn.close()
     
+
+def insert_homes(conn, queue_item, tags): #TODO: Add resolved URL to this list.
+    '''Inserts data about home sites of scraped advertisements. Specifically,
+    the homes table is for data gathered from resolved links that were 
+    originally scraped from an advertisement.
+    
+    Args:
+        • conn (sqlite3 connection): connection to database
+        • queue_item (List[dict{str:str}]): returned by create_queue_from_ads_row()
+            scrape_id (str) : primary key ID from ads table
+            date (str) : date of original scrape
+            name (str) : name of top level URL
+            url (str) : url scraped from advertisement found at <name>
+        • tags (dict{str:str}): scrape_id is an int, the rest are strings
+            scrape_id (int) : ID of primary scrape
+            date (str) : date of original top level scrape
+            url  (str) : url of original top level scrape
+            keywords (str) : meta_tag
+            description (str) : meta_tag
+            title (str) : meta_tag
+            og:title (str) : meta_tag
+            og:site_name (str) : meta_tag
+            twitter:keywords (str) : meta_tag
+            twitter:description (str) : meta_tag
+            twitter:title (str) : meta_tag
+            twitter:site (str) : meta_tag
+        • TODO: resolved_url: TODO
+    '''
+    # data will be passed to __get_sql_cols_and_vals_text() to get an insertable
+    # string for the homes table 
+    data = {
+        'scrape_id' : queue_item['scrape_id'],
+        'date' : queue_item['date'],
+        'name' : queue_item['name'],
+        'url' : queue_item['url'],
+    }
+    for k,v in tags.items():
+        data[k] = v
+    
+    # Construct data in a format insertable by SQL
+    data_to_insert = [v for v in data.values()]
+    cols, vals = __get_sql_cols_and_vals_text(data) # column names and values
+    
+    # Execute insertion and close connections
+    sql = f"""
+        INSERT INTO homes {cols}
+        VALUES {vals}
+    """
+    cur = conn.cursor()
+    cur.execute(sql, data_to_insert)
+    conn.commit()
+    cur.close()
+    conn.close()
     
 def __get_sql_cols_and_vals_text(data):
-    '''Gets column names and values from data to insert into ads table. Helper
-    function for insert_scrape()
+    '''Gets column names and values from data to insert into tables. Helper
+    function for insert_scrape() and insert_homes()
     
     Args:
         data (dict{str:str}): data to insert into ads
@@ -128,22 +180,13 @@ def __get_sql_cols_and_vals_text(data):
     vals = vals[:-1] + ')'
     return cols, vals
 
-def print_table(db_file, table_name):
-    """Prints the table specified by db_file and table name using Pandas
     
-    Args:
-        db_file (path): Path to sqlite3 database (probably scrapes.db)
-        table_name (str): Name of table within database to print
-    """
-    conn = sqlite3.connect(str(db_file))
-    print(pd.read_sql_query(f'SELECT * FROM {table_name}', conn))
-    
-# ~~~~~~~~~~~~ exlusively utilized by process_scraped.py ~~~~~~~~~~~~
+
+# ~~~~~~~~~~~~~~~~~ exlusively utilized by process_scraped.py ~~~~~~~~~~~~~~~~~
 
 def select_scrape_ids(conn):
-    """Gathers the set of scrape IDs present in the ads table. We will later
-    check these against the unique values of the scrape_id column in the 'homes'
-    table to see if any new postprocessing scrapes need to be initialized.
+    """Scrapes the 'ID' column of ads. We will use this data to see if there are
+    new entries to the database that need set off secondary scraping processes.
     
     Args:
         conn (sqlite3 connection): Connection to scrapes.db
@@ -167,3 +210,26 @@ def select_scrape_ids(conn):
    
     print(f'IDs present in "ads": {ids}') 
     return ids
+
+def select_row_from_ads(conn, row_id):
+    """Selects all the data in the row marked by row_id from the ads table
+    
+    Args:
+        conn (sqlite3 connection): connection to database (probably scrapes.db)
+        row_id (int): the ID of the row to select
+        
+    Returns:
+        dict: dictionary with key value pairs
+            column name (str) : value
+    """
+    # get row
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM ads WHERE id=?", (row_id,))
+    row = list(cur.fetchall()[0])
+
+    # get column names
+    col_names = [description[0] for description in cur.description]
+    
+    cur.close()
+
+    return dict(zip(col_names, row))

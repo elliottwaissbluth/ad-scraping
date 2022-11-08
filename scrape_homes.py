@@ -20,9 +20,9 @@ from pathlib import Path
 # date = args.d
 
 # FOR PROTOTYPING
-sites = ['https://www.hotelcommonwealth.com/']
-name = 'newscomau'
-date = '2022-10-24-14-54-11'
+sites = ['https://betterprogramming.pub/introduction-to-message-queue-with-rabbitmq-python-639e397cb668']
+name = 'test'
+date = '2022-10-23-14-54-12'
 
 # Create directories for the site in the analysis folder if it doesn't exist
 # Path in analyses folder

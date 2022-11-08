@@ -11,7 +11,9 @@ def select_row_from_ads(conn, row_id):
         
     Returns:
         dict: dictionary with key value pairs
-            column name (str) : value
+            scrape_id (str) : primary key ID from ads table
+            date (str) : date of original scrape
+            url (str) : URL of 
     """
     # get row
     cur = conn.cursor()
@@ -38,6 +40,13 @@ def create_queue_from_ads_row(row_data):
     Args:
         row_data (dict[str : ?]): data from a single row of "ads" table
             NOTE: This is the direct output of select_row_from_ads()
+    
+    Returns: #TODO finish this
+        dict: dictionary with key value pairs
+            scrape_id (str) : primary key ID from ads table
+            date (str) : date of original scrape
+            name (str) : name of top level URL
+            url (str) : url scraped from advertisement found at <name>
     """
     # Null case
     if row_data['adurls'] is None and row_data['destinationUrl'] is None:
