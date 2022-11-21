@@ -186,7 +186,7 @@ def __get_sql_cols_and_vals_text(data):
 
 # ~~~~~~~~~~~~~~~~~ exlusively utilized by process_scraped.py ~~~~~~~~~~~~~~~~~
 
-def select_scrape_ids(conn):
+def select_scrape_ids(conn, table = 'ads'):
     """Scrapes the 'ID' column of ads. We will use this data to see if there are
     new entries to the database that need set off secondary scraping processes.
     
@@ -198,11 +198,10 @@ def select_scrape_ids(conn):
             NOTE: each ID here corresponds to a single scrape of a single site
     """
     cur = conn.cursor()
-    cur.execute(
-        """
-        SELECT DISTINCT id FROM ads;
-        """
-    )
+    if table == 'ads':
+        cur.execute(f'SELECT DISTINCT id FROM ads;')
+    elif table == 'homes':
+        cur.execute(f'SELECT DISTINCT scrape_id FROM homes;')
     rows = cur.fetchall()
 
     # get IDs as ints
