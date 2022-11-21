@@ -10,19 +10,19 @@ import os
 from pathlib import Path
 
 # # Get url to scrape from argparse
-# parser = argparse.ArgumentParser()
-# parser.add_argument('-u', type=str, help='url of site to scrape')
-# parser.add_argument('-n', type=str, help='name of site ad was scraped from')
-# parser.add_argument('-d', type=str, help='date of original scrape')
-# args = parser.parse_args()
-# sites = [args.u]
-# name = args.n
-# date = args.d
+parser = argparse.ArgumentParser()
+parser.add_argument('-u', type=str, help='url of site to scrape')
+parser.add_argument('-n', type=str, help='name of site ad was scraped from')
+parser.add_argument('-d', type=str, help='date of original scrape')
+args = parser.parse_args()
+sites = [args.u]
+name = args.n
+date = args.d
 
 # FOR PROTOTYPING
-sites = ['https://betterprogramming.pub/introduction-to-message-queue-with-rabbitmq-python-639e397cb668']
-name = 'test'
-date = '2022-10-23-14-54-12'
+# sites = ['https://betterprogramming.pub/introduction-to-message-queue-with-rabbitmq-python-639e397cb668']
+# name = 'test'
+# date = '2022-10-23-14-54-12'
 
 # Create directories for the site in the analysis folder if it doesn't exist
 # Path in analyses folder

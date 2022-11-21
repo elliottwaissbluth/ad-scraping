@@ -107,18 +107,17 @@ def insert_scrape(conn, date, name, source_file, screenshot_file, p_tag_text,
     conn.close()
     
 
-def insert_homes(conn, queue_item, tags): #TODO: Add resolved URL to this list.
+def insert_homes(conn, scrape_id, date, name, url, filename, tags): 
     '''Inserts data about home sites of scraped advertisements. Specifically,
     the homes table is for data gathered from resolved links that were 
     originally scraped from an advertisement.
     
     Args:
         • conn (sqlite3 connection): connection to database
-        • queue_item (List[dict{str:str}]): returned by create_queue_from_ads_row()
-            scrape_id (str) : primary key ID from ads table
-            date (str) : date of original scrape
-            name (str) : name of top level URL
-            url (str) : url scraped from advertisement found at <name>
+        • scrape_id (str) : primary key ID from ads table
+        • date (str) : date of original scrape
+        • name (str) : name of top level URL
+        • url (str) : url scraped from advertisement found at <name>
         • tags (dict{str:str}): scrape_id is an int, the rest are strings
             scrape_id (int) : ID of primary scrape
             date (str) : date of original top level scrape
@@ -137,10 +136,11 @@ def insert_homes(conn, queue_item, tags): #TODO: Add resolved URL to this list.
     # data will be passed to __get_sql_cols_and_vals_text() to get an insertable
     # string for the homes table 
     data = {
-        'scrape_id' : queue_item['scrape_id'],
-        'date' : queue_item['date'],
-        'name' : queue_item['name'],
-        'url' : queue_item['url'],
+        'scrape_id' : scrape_id,
+        'date' : date,
+        'name' : name,
+        'url' : url,
+        'filename' : filename,
     }
     for k,v in tags.items():
         data[k] = v
@@ -154,6 +154,8 @@ def insert_homes(conn, queue_item, tags): #TODO: Add resolved URL to this list.
         INSERT INTO homes {cols}
         VALUES {vals}
     """
+    print(f'homes sql: {sql}')
+    print(f'data_to_insert: {data_to_insert}')
     cur = conn.cursor()
     cur.execute(sql, data_to_insert)
     conn.commit()

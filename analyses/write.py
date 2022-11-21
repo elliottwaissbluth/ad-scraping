@@ -1,6 +1,7 @@
 import argparse
 import json
 import sys
+import re
 from pathlib import Path
 from ad_extraction import (
     get_text_from_json,

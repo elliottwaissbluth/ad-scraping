@@ -150,3 +150,98 @@ def get_destination_url_from_json(j):
             url = get_destination_url_from_json(frames[f])
      
     return None
+
+def get_meta_tags_from_html(html_path):
+    '''Opens HTML file at html_path and extracts relevant meta tags
+    
+    Args:
+        html_path (Path): Path to html file to extract meta tags from
+    
+    Returns:
+        dict {str : str}: meta tag name or property : value
+    '''
+    meta_tag_names_and_properties = [
+        'keywords',
+        'description',
+        'title',
+        'og:keywords',
+        'og:description',
+        'og:title',
+        'og:site_name',
+        'twitter:keywords',
+        'twitter:description',
+        'twitter:title',
+        'twitter:site'
+    ]
+    
+    # The ":" char isn't allowed in the column name of sqlite3
+    col_names_to_change = [
+        'og:keywords',
+        'og:description',
+        'og:title',
+        'og:site_name',
+        'twitter:keywords',
+        'twitter:description',
+        'twitter:title',
+        'twitter:site'
+    ]
+    data = {}
+    
+    with open(str(html_path), 'r') as f:
+        soup = BeautifulSoup(f, 'html.parser')
+    
+    for tag in soup.find_all('meta'):
+        if tag.get('property', None) in meta_tag_names_and_properties:
+            data[tag.get('property')] = tag.get('content', None)
+        elif tag.get('name', None) in meta_tag_names_and_properties:
+            data[tag.get('name')] = tag.get('content', None)
+
+    for k in col_names_to_change:
+        if k in data.keys():
+            data[k.replace(':', '_')] = data[k]
+            del data[k]
+            
+    print(data)
+    return data
+
+def create_queue_from_ads_row(row_data):
+    """Takes the data from a row of "ads" and creates a list of URLs  and
+    descriptive data to feed into the scraper used to populate "homes".
+    
+    Args:
+        row_data (dict[str : ?]): data from a single row of "ads" table
+            NOTE: This is the direct output of select_row_from_ads()
+    
+    Returns: #TODO finish this
+        dict: dictionary with key value pairs
+            scrape_id (str) : primary key ID from ads table
+            date (str) : date of original scrape
+            name (str) : name of top level URL
+            url (str) : url scraped from advertisement found at <name>
+    """
+    # Null case
+    if row_data['adurls'] is None and row_data['destinationUrl'] is None:
+        return None
+
+    # Extract all URLs in row_data
+    # URLs may be present in the 'adurls' or 'destinationUrl' columns
+    urls = []
+    if row_data['adurls'] is not None:
+        urls.extend(row_data['adurls'].split(' || '))
+    if row_data['destinationUrl'] is not None:
+        urls.extend(row_data['destinationUrl'].split(' || '))
+
+    # Remove duplicate URLs
+    urls = list(set(urls))
+    
+    # Create queue with descriptive data for each URL
+    queue = [
+        {
+            'scrape_id' : row_data['id'],
+            'date' : row_data['date'],
+            'name' : row_data['name'],
+            'url' : x    
+        } for x in urls
+    ]
+    
+    return queue
