@@ -12,32 +12,43 @@ from openwpm.storage.sql_provider import SQLiteStorageProvider
 from openwpm.task_manager import TaskManager
 import argparse
 import os
+import ast
+import sys
 from pathlib import Path
 
 # Get url to scrape from argparse
 parser = argparse.ArgumentParser()
-parser.add_argument('-u', type=str, help='url of site to scrape')
-parser.add_argument('-n', type=str, help='name of site to scrape')
+parser.add_argument('-s', type=str, help='dictionary of site names/urls')
 args = parser.parse_args()
-name = args.n
-sites = [args.u]
+sites = ast.literal_eval(args.s)
+
+print('in scrape!')
+print(sites)
+
+# Get names and urls from sites dictionary
+names = list(sites.keys())
+urls  = list(sites.values())
+
+print(names)
+print(urls)
 
 # Create directories for the site in the analysis folder if it doesn't exist
 # Path in analyses folder
-analysis_path = Path.cwd() / 'analyses' / 'sites' / name
-if not analysis_path.exists():
-    os.mkdir(analysis_path)
-    os.mkdir(analysis_path / 'sources')
-    os.mkdir(analysis_path / 'screenshots')
+analysis_paths = [Path.cwd()/'analyses'/'sites'/name for name in names]
+for p in analysis_paths:
+    if not p.exists():
+        os.mkdir(p)
+        os.mkdir(p / 'sources')
+        os.mkdir(p / 'screenshots')
 # Path in OpenWPM data_directory
-datadir_path = Path.cwd() / 'datadir' / name
+datadir_path = Path.cwd() / 'datadir'
 if not datadir_path.exists():
     os.mkdir(datadir_path)
     os.mkdir(datadir_path / 'sources')
     os.mkdir(datadir_path / 'screenshots')
 
 
-NUM_BROWSERS = 1
+NUM_BROWSERS = 4
 
 # Loads the default ManagerParams
 # and NUM_BROWSERS copies of the default BrowserParams
@@ -74,10 +85,21 @@ manager_params.log_path = Path("./datadir/openwpm.log")
 # manager_params.memory_watchdog = True
 # manager_params.process_watchdog = True
 
-def get_suffix():
-    '''Uses current date and time as string as suffix'''
+def get_suffix(url, sites):
+    '''Uses name, current date and time as string as suffix. Gathers name by
+    reverse searching the sites dictionary.
+    
+    Suffix structure:
+    __<name>__<current date and time>
+    '''
+    name = [x for x in sites if sites[x] == url]
+    name = name[0]
     now = datetime.now()
-    return now.strftime('%Y-%m-%d-%H-%M-%S')
+    now = now.strftime('%Y-%m-%d-%H-%M-%S')
+    suffix = f'__{name}__{now}'
+    print(f'suffix !! : {suffix}')
+
+    return suffix
 
 
 # Commands time out by default after 60 seconds
@@ -88,7 +110,7 @@ with TaskManager(
     None,
 ) as manager:
     # Visits the sites
-    for index, site in enumerate(sites):
+    for index, site in enumerate(urls):
 
         def callback(success: bool, val: str = site) -> None:
             print(
@@ -102,10 +124,10 @@ with TaskManager(
             callback=callback,
             reset=True
         )
-        suffix = get_suffix()
+        suffix = get_suffix(site, sites)
         # Start by visiting the page
-        command_sequence.append_command(GetCommand(url=site, sleep=20), timeout=60)
-        command_sequence.append_command(RecursiveDumpPageSourceCommand(suffix=suffix), timeout=60)
+        command_sequence.append_command(GetCommand(url=site, sleep=20), timeout=180)
+        command_sequence.append_command(RecursiveDumpPageSourceCommand(suffix=suffix), timeout=180)
         command_sequence.append_command(ScreenshotFullPageCommand(suffix=suffix))
 
         # Run commands across all browsers (simple parallelization)
