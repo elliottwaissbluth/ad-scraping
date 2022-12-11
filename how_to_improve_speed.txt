@@ -1,0 +1,6 @@
+• Run both scrapers in parallel with the maximum number of browsers
+• Instead of post-processing and inserting into the database after each scrape,
+do it many times after the big scrape
+• After this, gather the list of sites to do secondary scrapes for
+• Repeat the same heuristic
+• Start the whole thing over
