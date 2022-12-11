@@ -5,8 +5,54 @@ from multiprocessing import Process
 import pandas as pd
 from analyses.database import (
     create_connection,
-    select_scrape_ids
+    select_scrape_ids,
+    create_table
 )
+
+SQL_CREATE_ADS_TABLE = """
+CREATE TABLE IF NOT EXISTS ads (
+    id integer PRIMARY KEY,
+    date text NOT NULL,
+    name text NOT NULL,
+    source_file text NOT NULL,
+    screenshot_file text NOT NULL,
+    backend_mobile_detect integer,
+    backend_geo_country text,
+    backend_geo_region text,
+    backend_geo_city text,
+    backend_geo_lat real,
+    backend_geo_long real,
+    backend_geo_tmz text,
+    backend_geo_network text,
+    gdpr_user integer,
+    mfSponsor text,
+    p_tags text,
+    adurls text,
+    destinationUrl text
+);
+"""
+
+SQL_CREATE_HOMES_TABLE = """
+CREATE TABLE IF NOT EXISTS homes (
+    id integer PRIMARY KEY,
+    scrape_id integer NOT NULL,
+    name text NOT NULL,
+    date text NOT NULL,
+    url text NOT NULL,
+    filename text NOT NULL,
+    keywords text,
+    description text,
+    title text,
+    og_title text,
+    og_site_name text,
+    og_description text,
+    twitter_keywords text,
+    twitter_description text,
+    twitter_title text,
+    twitter_site text,
+    FOREIGN KEY(scrape_id) REFERENCES ads(id) 
+)
+"""
 
 def scrape_sources(name, url):
     # Start extract.py to scrape a single site
@@ -25,6 +71,22 @@ def scrape_homes(row_id):
 def main():
     
     db_file = Path.cwd() / 'analyses' / 'scrapes.db'
+
+    # Check to see if tables exist, create them if they don't
+    conn = create_connection(db_file)
+    # ads table
+    if conn is not None:
+        create_table(conn, SQL_CREATE_ADS_TABLE)
+    else:
+        print('database connection error')
+        sys.exit(1)
+    # homes table 
+    if conn is not None:
+        create_table(conn, SQL_CREATE_HOMES_TABLE)
+    else:
+        print('database connection error')
+        sys.exit(1)
+    conn.close()
 
     # Load list of sources from sources.csv
     df = pd.read_csv('sources.csv', header=0)
@@ -67,6 +129,7 @@ def main():
         # Execute homes processes
         for q in homes_processes:
             q.start()
+            # q.join()
 
 
 if __name__ == '__main__':

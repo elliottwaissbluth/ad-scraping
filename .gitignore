@@ -1,3 +1,22 @@
+# OpenWPM files
+Extension/
+firefox-bin/
+openwpm/
+schemas/
+scripts/
+crawler.py
+custom_command.py
+environment.yaml
+setup.cfg
+commitlint.config.js
+install.sh
+pytest.ini
+package.json
+package-lock.json
+VERSION
+geckodrover.log
+
+
 # Github PAT
 personal_access_token.txt
 

@@ -209,7 +209,10 @@ def select_scrape_ids(conn, table = 'ads'):
     for row in rows:
         ids.add(row[0])
    
-    print(f'IDs present in "ads": {ids}') 
+    # close cursor
+    cur.close()
+
+    print(f'IDs present in "{table}": {ids}') 
     return ids
 
 def select_row_from_ads(conn, row_id):
