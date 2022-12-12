@@ -74,10 +74,18 @@ def scrape_sources(sites):
     p = subprocess.Popen(cmd).wait()
     
 
-def scrape_homes(row_id):
+def scrape_homes(secondary_ids):
     # Start extract_homes.py to do a secondary scrape for a single site
-    print(f'\nBEGINNING SECONDARY SCRAPE FOR ROW {row_id}\n')
-    cmd = ['python3', 'extract_homes.py', '-i', str(row_id)]
+    print(f'\nBEGINNING SECONDARY SCRAPE FOR ROWS\n {secondary_ids}\n')
+    
+    # Construct string of list to pass as input to extract_homes.py
+    ids = '['
+    for i in secondary_ids:
+        ids += f'"{i}", '
+    ids = ids[:-2] + ']'
+
+    print(f'in scrape_homes: {ids}')
+    cmd = ['python3', 'extract_homes.py', '-i', ids]
     p = subprocess.Popen(cmd).wait()
     
     
@@ -107,8 +115,8 @@ def main():
     print(f'sites: {sites}')
      
     # Send all sites to extract.py
+    # NOTE uncomment this for final
     scrape_sources(sites)
-    sys.exit(0)
 
     # Get new row_ids when processes finish
     # Create connection to database
@@ -120,21 +128,14 @@ def main():
         conn.close()
     else:
         print('database connection error')
-        # continue
     
     # The new scrapes are the difference between these scrapes
     secondary_ids = list(source_ids - homes_ids)
     print(f'secondary_ids: {secondary_ids}')
     
-    # Start a new process for each id in secondary_ids
-    homes_processes = [Process(target=scrape_homes, args=(i,)) 
-                        for i in secondary_ids]
-    
-    # Execute homes processes
-    for q in homes_processes:
-        q.start()
-        # q.join()
-
+    # secondary_ids = [3, 4] 
+    if secondary_ids:
+        scrape_homes(secondary_ids)
 
 if __name__ == '__main__':
     main()

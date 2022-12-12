@@ -7,21 +7,7 @@ import argparse
 import sys
 import ast
 import re
-
-def get_double_underscore_string(input_str):
-    '''Written by ChatGPT
-    '''
-    # Use a regular expression to find the part of the string that is enclosed
-    # in double underscores (__)
-    match = re.search(r"__(.*?)__", input_str)
-    
-    if match:
-        # If a match is found, return the part of the string that was
-        # enclosed in double underscores
-        return match.group(0)
-    else:
-        # If no match is found, return an empty string
-        return ""
+from utils import get_double_underscore_string
 
 
 # Get the site name and url to scrape
@@ -61,6 +47,10 @@ for gz_file in gz_paths:
     # Get part of json file name surrounded by double underscore __<name>__
     name = get_double_underscore_string(json_file)
     analysis_path = analysis_paths[name]
+    if not Path(analysis_path).exists():  # create directories if they don't exist
+        os.mkdir(analysis_path)
+        os.mkdir(Path(analysis_path) / 'sources')
+        os.mkdir(Path(analysis_path) / 'screenshots')
     
     # Define destination path 
     new_path = analysis_path / 'sources' / new_filename

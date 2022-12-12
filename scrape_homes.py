@@ -8,39 +8,34 @@ from openwpm.task_manager import TaskManager
 import argparse
 import os
 from pathlib import Path
+import ast
+import sys
 
 # # Get url to scrape from argparse
 parser = argparse.ArgumentParser()
-parser.add_argument('-u', type=str, help='url of site to scrape')
-parser.add_argument('-n', type=str, help='name of site ad was scraped from')
-parser.add_argument('-d', type=str, help='date of original scrape')
+parser.add_argument('-s', type=str, help='dict of queue_IDs and urls to scrape')
 args = parser.parse_args()
-sites = [args.u]
-name = args.n
-date = args.d
+to_scrape = ast.literal_eval(args.s)
+to_scrape = {v: k for k, v in to_scrape.items()}
+print(f'to_scrape in scrape_homes: {to_scrape}')
+
+sites = list(to_scrape.keys())
+
+print(f'sites: {sites}')
 
 # FOR PROTOTYPING
 # sites = ['https://betterprogramming.pub/introduction-to-message-queue-with-rabbitmq-python-639e397cb668']
 # name = 'test'
 # date = '2022-10-23-14-54-12'
 
-# Create directories for the site in the analysis folder if it doesn't exist
-# Path in analyses folder
-analysis_path = Path.cwd() / 'analyses' / 'sites' / name / 'scraped_ad_sources'
-if not analysis_path.exists():
-    os.mkdir(analysis_path)
-    os.mkdir(analysis_path / 'sources')
-    os.mkdir(analysis_path / 'screenshots')
-
 # Path in OpenWPM data_directory
-datadir_path = Path.cwd() / 'datadir' / name / 'scraped_ad_sources'
+datadir_path = Path.cwd() / 'datadir' / 'scraped_ad_sources'
 if not datadir_path.exists():
     os.mkdir(datadir_path)
     os.mkdir(datadir_path / 'sources')
     os.mkdir(datadir_path / 'screenshots')
 
-
-NUM_BROWSERS = 1
+NUM_BROWSERS = 2
 
 # Loads the default ManagerParams
 # and NUM_BROWSERS copies of the default BrowserParams
@@ -77,6 +72,18 @@ manager_params.log_path = Path("./datadir/openwpm.log")
 # manager_params.memory_watchdog = True
 # manager_params.process_watchdog = True
 
+def get_suffix(url, to_scrape):
+    '''Produces an identifying suffix to tag onto the saved html file for future
+    processing. Creates the suffix in the following form:
+    
+    (auto_generated_by_OpenWPM)__<ID>__.html
+    
+    Args:
+        url (str): url of site being scraped
+        to_scrape(dict[str:str]): dict with key:value url:ID
+    '''
+    return '__' + to_scrape[url] + '__'
+
 # Commands time out by default after 60 seconds
 with TaskManager(
     manager_params,
@@ -100,8 +107,8 @@ with TaskManager(
             reset=True
         )
         # Start by visiting the page
-        command_sequence.append_command(GetCommand(url=site, sleep=10), timeout=60)
-        command_sequence.append_command(DumpPageSourceCommand(suffix=date), timeout=60)
+        command_sequence.append_command(GetCommand(url=site, sleep=20), timeout=180)
+        command_sequence.append_command(DumpPageSourceCommand(suffix=get_suffix(site, to_scrape)), timeout=180)
 
         # Run commands across all browsers (simple parallelization)
         manager.execute_command_sequence(command_sequence)

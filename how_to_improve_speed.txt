@@ -14,6 +14,7 @@ ast.literal_eval within extract.py
 - Import all the sites at once and run the scraper on the lot of them
 - Find datadir paths and analysis paths for each site scraped
         (this will be an iteration over the names of the sites)
+- TO DO: create folders in analyses if they don't exist
 
   
   ~~~ After scraping has happened ~~~
@@ -23,3 +24,7 @@ ast.literal_eval within extract.py
 - Change suffix to include name so that extract.py can find which json and png
 file go to which folder in "analyses/sites"
 
+~~~ extract_homes.py modifications ~~~
+Rather than gathering one row at a time to create a single queue, create
+multiple queues with identifiers so that the data structure can be passed
+to scrape_homes.py with a descriptive suffix
