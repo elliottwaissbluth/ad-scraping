@@ -1,0 +1,30 @@
+• Run both scrapers in parallel with the maximum number of browsers
+• Instead of post-processing and inserting into the database after each scrape,
+do it many times after the big scrape
+• After this, gather the list of sites to do secondary scrapes for
+• Repeat the same heuristic
+• Start the whole thing over
+
+~~~ main.py modifications ~~~
+- Rather than sending one site at a time to extract.py, send all the sites at
+once. Can do this by converting the list to a string then calling
+ast.literal_eval within extract.py
+
+~~~ extract.py modifications ~~~
+- Import all the sites at once and run the scraper on the lot of them
+- Find datadir paths and analysis paths for each site scraped
+        (this will be an iteration over the names of the sites)
+- TO DO: create folders in analyses if they don't exist
+
+  
+  ~~~ After scraping has happened ~~~
+
+~~~ scrape.py modifications ~~~
+- Import all sites at once
+- Change suffix to include name so that extract.py can find which json and png
+file go to which folder in "analyses/sites"
+
+~~~ extract_homes.py modifications ~~~
+Rather than gathering one row at a time to create a single queue, create
+multiple queues with identifiers so that the data structure can be passed
+to scrape_homes.py with a descriptive suffix

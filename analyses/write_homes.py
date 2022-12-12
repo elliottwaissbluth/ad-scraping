@@ -14,26 +14,24 @@ from ad_extraction import get_meta_tags_from_html
 
 # Get the row_id of the newly added row
 parser = argparse.ArgumentParser()
-parser.add_argument('-d', type=str, help='date and time of scrape')
-parser.add_argument('-f', type=str, help='filename of HTML of site')
+parser.add_argument('-f', type=str, help='file path of HTML of site')
+parser.add_argument('-d', type=str, help='date of original scrape')
 parser.add_argument('-n', type=str, help='name of site')
 parser.add_argument('-u', type=str, help='URL of site')
 parser.add_argument('-i', type=str, help='id of the row to gather urls from')
 args = parser.parse_args()
-filename = args.f
-date = filename.split('.')[0]
+html_path = args.f
+date = args.d
 name = args.n
 url = args.u
 row_id = args.i
 
+print('\nIn write_homes.py')
 print(f'name: {name}')
 print(f'date: {date}')
 print(f'url: {url}')
 print(f'row_id: {row_id}')
-
-# Open file and analyze for tags
-analysis_path = Path.cwd() / 'analyses' / 'sites' / name / 'scraped_ad_sources'
-html_path = analysis_path / 'sources' / filename
+print(f'html_path: {html_path}')
 
 # Get tags
 tags = get_meta_tags_from_html(html_path)
@@ -72,4 +70,4 @@ else:
     sys.exit(1)
 
 # Append tags to homes table
-insert_homes(conn, row_id, date, name, url, filename, tags)
+insert_homes(conn, row_id, date, name, url, html_path, tags)

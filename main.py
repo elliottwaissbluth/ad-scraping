@@ -1,5 +1,7 @@
 import subprocess
 import time
+import json
+import sys
 from pathlib import Path
 from multiprocessing import Process
 import pandas as pd
@@ -54,17 +56,36 @@ CREATE TABLE IF NOT EXISTS homes (
 )
 """
 
-def scrape_sources(name, url):
+def scrape_sources(sites):
+    '''Sets the top level site scraping pipeline in motion by calling extract.py
+    on all the websites listed in the sites dictionary
+    
+    Args:
+        sites (dict[str:str]): key : value pairs are <site name> : <site url>
+    '''
     # Start extract.py to scrape a single site
-    print(f'\nBEGINNING PRIMARY SCRAPE FOR {name}\n')
-    cmd = ['python3', 'extract.py', '-n', name, '-u', url]
+    print(f'\nBEGINNING PRIMARY SCRAPE FOR\n~~~~~~~~~~~~~~~~~~~~~\n{sites}\n')
+    
+    # Convert sites to string to send over in argument
+    sites = json.dumps(sites)
+    
+    # start scraping all sites
+    cmd = ['python3', 'extract.py', '-s', sites]
     p = subprocess.Popen(cmd).wait()
     
 
-def scrape_homes(row_id):
+def scrape_homes(secondary_ids):
     # Start extract_homes.py to do a secondary scrape for a single site
-    print(f'\nBEGINNING SECONDARY SCRAPE FOR ROW {row_id}\n')
-    cmd = ['python3', 'extract_homes.py', '-i', str(row_id)]
+    print(f'\nBEGINNING SECONDARY SCRAPE FOR ROWS\n {secondary_ids}\n')
+    
+    # Construct string of list to pass as input to extract_homes.py
+    ids = '['
+    for i in secondary_ids:
+        ids += f'"{i}", '
+    ids = ids[:-2] + ']'
+
+    print(f'in scrape_homes: {ids}')
+    cmd = ['python3', 'extract_homes.py', '-i', ids]
     p = subprocess.Popen(cmd).wait()
     
     
@@ -90,47 +111,31 @@ def main():
 
     # Load list of sources from sources.csv
     df = pd.read_csv('sources.csv', header=0)
-    sites = list(zip(df.name, df.url))
+    sites = dict(zip(df.name, df.url))
     print(f'sites: {sites}')
      
-    # Create a list of processes
-    source_processes = [Process(target=scrape_sources, args=s) for s in sites]
-                 
-    # Execute processes in a loop
-    # for p in source_processes:
-        # p.start()
+    # Send all sites to extract.py
+    # NOTE uncomment this for final
+    scrape_sources(sites)
+
+    # Get new row_ids when processes finish
+    # Create connection to database
+    conn = create_connection(db_file)
+    if conn is not None:
+        # Get the scrapes from source and the ones already in homes
+        source_ids = select_scrape_ids(conn, table='ads')
+        homes_ids = select_scrape_ids(conn, table='homes')
+        conn.close()
+    else:
+        print('database connection error')
     
-    # for p in source_processes:
-        # p.join()
-    source_processes[0].start()
-    source_processes[0].join()
-
-    if True:
-        # Get new row_ids when processes finish
-        # Create connection to database
-        conn = create_connection(db_file)
-        if conn is not None:
-            # Get the scrapes from source and the ones already in homes
-            source_ids = select_scrape_ids(conn, table='ads')
-            homes_ids = select_scrape_ids(conn, table='homes')
-            conn.close()
-        else:
-            print('database connection error')
-            # continue
-        
-        # The new scrapes are the difference between these scrapes
-        secondary_ids = list(source_ids - homes_ids)
-        print(f'secondary_ids: {secondary_ids}')
-        
-        # Start a new process for each id in secondary_ids
-        homes_processes = [Process(target=scrape_homes, args=(i,)) 
-                           for i in secondary_ids]
-        
-        # Execute homes processes
-        for q in homes_processes:
-            q.start()
-            # q.join()
-
+    # The new scrapes are the difference between these scrapes
+    secondary_ids = list(source_ids - homes_ids)
+    print(f'secondary_ids: {secondary_ids}')
+    
+    # secondary_ids = [3, 4] 
+    if secondary_ids:
+        scrape_homes(secondary_ids)
 
 if __name__ == '__main__':
     main()

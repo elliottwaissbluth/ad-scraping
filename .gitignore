@@ -16,7 +16,6 @@ package-lock.json
 VERSION
 geckodrover.log
 
-
 # Github PAT
 personal_access_token.txt
 
@@ -28,6 +27,8 @@ analyses/sites/*
 analyses/temp/*
 !analyses/temp/.gitkeep
 scrapes.db
+CSVs/*
+!CSVs/.gitkeep
 
 # old stuff
 analyses/archive/

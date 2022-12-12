@@ -131,7 +131,6 @@ def insert_homes(conn, scrape_id, date, name, url, filename, tags):
             twitter:description (str) : meta_tag
             twitter:title (str) : meta_tag
             twitter:site (str) : meta_tag
-        • TODO: resolved_url: TODO
     '''
     # data will be passed to __get_sql_cols_and_vals_text() to get an insertable
     # string for the homes table 
@@ -142,6 +141,7 @@ def insert_homes(conn, scrape_id, date, name, url, filename, tags):
         'url' : url,
         'filename' : filename,
     }
+    print(f'tags: {tags}')
     for k,v in tags.items():
         data[k] = v
     
