@@ -26,13 +26,6 @@ name = args.n
 url = args.u
 row_id = args.i
 
-print('\nIn write_homes.py')
-print(f'name: {name}')
-print(f'date: {date}')
-print(f'url: {url}')
-print(f'row_id: {row_id}')
-print(f'html_path: {html_path}')
-
 # Get tags
 tags = get_meta_tags_from_html(html_path)
 
@@ -61,13 +54,6 @@ sql_create_homes_table = """
         FOREIGN KEY(scrape_id) REFERENCES ads(id) 
     )
     """
-
-conn = create_connection(db_file)
-if conn is not None:
-    create_table(conn, sql_create_homes_table)
-else:
-    print('database connection error')
-    sys.exit(1)
 
 # Append tags to homes table
 insert_homes(conn, row_id, date, name, url, html_path, tags)

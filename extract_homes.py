@@ -25,6 +25,7 @@ row_ids = ast.literal_eval(args.i)
 db_path = Path.cwd() / 'analyses' /'scrapes.db'
 conn = create_connection(db_path)
 
+# Create queues of sites to scrape, see create_queue_from_ads_row()
 queues = []
 for row_id in row_ids: 
         # Get the row data from the ads table in scrapes.db
@@ -33,24 +34,20 @@ for row_id in row_ids:
         queue = create_queue_from_ads_row(row_data)
         queues.append(queue)
 conn.close()
-queues = [x for y in queues for x in y]
-
-# print(f'queues: {queues}')
+queues = [x for y in queues for x in y] # flatten
 
 # We will construct an ID for each queue in queues to later identify and save
-# by adjusting the suffix
+# sites to their proper rows
+# The ID will be marked in the suffix constructed in scrape_homes.py
 queues_ids = {i: x for i,x in enumerate(queues)}
-# print(queues_ids)
 
 # Now we can construct the dictionary {queue_id: url} to send to the scraper
 to_scrape = {}
 for k,v in queues_ids.items():
         to_scrape[k] = v['url']
 to_scrape = json.dumps(to_scrape) # make string for passage as argument
-# print(f'to_scrape: {to_scrape}')
 
-# Send to scraper
-# TODO re-engage
+# Send to scraper via terminal command
 cmd = ['python3', 'scrape_homes.py', '-s', to_scrape]
 p = subprocess.Popen(cmd).wait()
 
@@ -68,8 +65,6 @@ for html_path in [datadir / x for x in os.listdir(datadir)]:
         new_path = analysis_path / (queue_id + '_' + scrape['date'] + '.html')
         
         # Move file
-        print(f'html_path: {html_path}')
-        print(f'new_path: {new_path}')
         cmd = ['mv', str(html_path), str(new_path)]
         p = subprocess.Popen(cmd).wait()
 

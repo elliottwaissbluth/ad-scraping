@@ -63,19 +63,28 @@ def scrape_sources(sites):
     Args:
         sites (dict[str:str]): key : value pairs are <site name> : <site url>
     '''
-    # Start extract.py to scrape a single site
+    # Start extract.py to begin pipeline
     print(f'\nBEGINNING PRIMARY SCRAPE FOR\n~~~~~~~~~~~~~~~~~~~~~\n{sites}\n')
     
     # Convert sites to string to send over in argument
     sites = json.dumps(sites)
     
-    # start scraping all sites
+    # Terminal command
     cmd = ['python3', 'extract.py', '-s', sites]
     p = subprocess.Popen(cmd).wait()
     
 
 def scrape_homes(secondary_ids):
-    # Start extract_homes.py to do a secondary scrape for a single site
+    '''Sets the secojnd level site scraping pipeline in motion by calling 
+    extract_homes.py on all the sites found in the rows of the ads table with
+    id in secondary_ids
+    
+    Args:
+        secondary_ids (List[int]): A list of the IDs found in the ads
+            table but not linked to by the scrape_ID column of the homes table.
+            Basically it's just all the new scrapes that haven't been addressed
+            by the secondary scraper yet.  
+    '''
     print(f'\nBEGINNING SECONDARY SCRAPE FOR ROWS\n {secondary_ids}\n')
     
     # Construct string of list to pass as input to extract_homes.py
@@ -84,58 +93,54 @@ def scrape_homes(secondary_ids):
         ids += f'"{i}", '
     ids = ids[:-2] + ']'
 
-    print(f'in scrape_homes: {ids}')
+    # Terminal command
     cmd = ['python3', 'extract_homes.py', '-i', ids]
     p = subprocess.Popen(cmd).wait()
     
     
 def main():
-    
+    # Check for database 
     db_file = Path.cwd() / 'analyses' / 'scrapes.db'
+    if not db_file.exists():
+        raise FileNotFoundError('Please initialize the database by creating \
+            the file "scrapes.db" in the analyses folder')
 
-    # Check to see if tables exist, create them if they don't
+    # Check if tables exist, create them if they don't
     conn = create_connection(db_file)
-    # ads table
-    if conn is not None:
+    if conn is not None: # ads table
         create_table(conn, SQL_CREATE_ADS_TABLE)
-    else:
-        print('database connection error')
-        sys.exit(1)
-    # homes table 
-    if conn is not None:
         create_table(conn, SQL_CREATE_HOMES_TABLE)
     else:
-        print('database connection error')
-        sys.exit(1)
+        raise RuntimeError('Database connection error, could not create tables')
     conn.close()
 
     # Load list of sources from sources.csv
-    df = pd.read_csv('sources.csv', header=0)
+    csv_file = Path.cwd() / 'sources.csv'
+    if not csv_file.exists():
+        raise FileNotFoundError('Please place the sites to scrape in a CSV \
+            titled "sources.csv" and place it in the ad-scraping directory')
+    df = pd.read_csv(csv_file, header=0)
     sites = dict(zip(df.name, df.url))
-    print(f'sites: {sites}')
      
     # Send all sites to extract.py
-    # NOTE uncomment this for final
     scrape_sources(sites)
 
     # Get new row_ids when processes finish
-    # Create connection to database
     conn = create_connection(db_file)
     if conn is not None:
         # Get the scrapes from source and the ones already in homes
         source_ids = select_scrape_ids(conn, table='ads')
         homes_ids = select_scrape_ids(conn, table='homes')
         conn.close()
+
+        # The new scrapes are the difference between these scrapes
+        secondary_ids = list(source_ids - homes_ids)
+        if secondary_ids:
+            scrape_homes(secondary_ids)
     else:
-        print('database connection error')
+        raise RuntimeError('Database connection error, could not perform \
+            secondary scrape')
     
-    # The new scrapes are the difference between these scrapes
-    secondary_ids = list(source_ids - homes_ids)
-    print(f'secondary_ids: {secondary_ids}')
-    
-    # secondary_ids = [3, 4] 
-    if secondary_ids:
-        scrape_homes(secondary_ids)
 
 if __name__ == '__main__':
     main()

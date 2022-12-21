@@ -3,7 +3,7 @@ import re
 
 def get_text_from_json(j, text=None):
     '''Recursively gets all the text in <p> tags from the json output by
-    RecursiveDumpPageSourceCommand
+    RecursiveDumpPageSourceCommand()
 
     Args:
         j (json dict): JSON output by json.load(<json file>)
@@ -94,6 +94,16 @@ def get_adurl_from_json(j, urls=None):
     return urls
 
 def get_utag_data_from_json(j):
+    '''Gathers utag data from HTML stored in JSON. utags refer to geo tags
+    perceived by the site which are presumably used to deliver relevant ad
+    content
+    
+    Args:
+        j (json dict): JSON output by json.load(<json file>)
+    
+    Returns:
+        dict: (key : value) = (utag : value)
+    '''
     html_block = str(j['source'])
     html_block = bytes(html_block, "utf-8").decode('unicode_escape')
 
@@ -206,13 +216,14 @@ def get_meta_tags_from_html(html_path):
 
 def create_queue_from_ads_row(row_data):
     """Takes the data from a row of "ads" and creates a list of URLs  and
-    descriptive data to feed into the scraper used to populate "homes".
+    descriptive data to feed into the scraper used to populate "homes". Gathers
+    URLs from all columns containing URLs
     
     Args:
         row_data (dict[str : ?]): data from a single row of "ads" table
             NOTE: This is the direct output of select_row_from_ads()
     
-    Returns: #TODO finish this
+    Returns: 
         dict: dictionary with key value pairs
             scrape_id (str) : primary key ID from ads table
             date (str) : date of original scrape
@@ -225,6 +236,7 @@ def create_queue_from_ads_row(row_data):
 
     # Extract all URLs in row_data
     # URLs may be present in the 'adurls' or 'destinationUrl' columns
+    # If there are multiple urls, they will be split by ' || '
     urls = []
     if row_data['adurls'] is not None:
         urls.extend(row_data['adurls'].split(' || '))
