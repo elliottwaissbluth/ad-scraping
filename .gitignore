@@ -1,20 +1,32 @@
-# OpenWPM files
+# OpenWPM folders
+.github/
 Extension/
 firefox-bin/
 openwpm/
 schemas/
 scripts/
-crawler.py
-custom_command.py
-environment.yaml
-setup.cfg
+
+# OpenWPM environment files
+.codecov.yml
+.dockerignore
+.gitattributes
+.pre-commit-config.yaml
+.readthedocs.yaml
 commitlint.config.js
+Dockerfile
+environment.yaml
 install.sh
-pytest.ini
 package.json
 package-lock.json
 VERSION
 geckodrover.log
+setup.cfg
+pytest.ini
+
+
+# OpenWPM scraping files
+crawler.py
+custom_command.py
 
 # Github PAT
 personal_access_token.txt
