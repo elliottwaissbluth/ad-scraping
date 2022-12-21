@@ -23,7 +23,6 @@ geckodrover.log
 setup.cfg
 pytest.ini
 
-
 # OpenWPM scraping files
 crawler.py
 custom_command.py
