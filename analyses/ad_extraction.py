@@ -211,7 +211,6 @@ def get_meta_tags_from_html(html_path):
             data[k.replace(':', '_')] = data[k]
             del data[k]
             
-    print(data)
     return data
 
 def create_queue_from_ads_row(row_data):

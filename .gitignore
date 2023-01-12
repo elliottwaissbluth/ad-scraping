@@ -5,6 +5,7 @@ firefox-bin/
 openwpm/
 schemas/
 scripts/
+test/
 
 # OpenWPM environment files
 .codecov.yml
