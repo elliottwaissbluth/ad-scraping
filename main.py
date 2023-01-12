@@ -10,58 +10,17 @@ from analyses.database import (
     select_scrape_ids,
     create_table
 )
-
-SQL_CREATE_ADS_TABLE = """
-CREATE TABLE IF NOT EXISTS ads (
-    id integer PRIMARY KEY,
-    date text NOT NULL,
-    name text NOT NULL,
-    source_file text NOT NULL,
-    screenshot_file text NOT NULL,
-    backend_mobile_detect integer,
-    backend_geo_country text,
-    backend_geo_region text,
-    backend_geo_city text,
-    backend_geo_lat real,
-    backend_geo_long real,
-    backend_geo_tmz text,
-    backend_geo_network text,
-    gdpr_user integer,
-    mfSponsor text,
-    p_tags text,
-    adurls text,
-    destinationUrl text
-);
-"""
-
-SQL_CREATE_HOMES_TABLE = """
-CREATE TABLE IF NOT EXISTS homes (
-    id integer PRIMARY KEY,
-    scrape_id integer NOT NULL,
-    name text NOT NULL,
-    date text NOT NULL,
-    url text NOT NULL,
-    filename text NOT NULL,
-    keywords text,
-    description text,
-    title text,
-    og_title text,
-    og_site_name text,
-    og_description text,
-    twitter_keywords text,
-    twitter_description text,
-    twitter_title text,
-    twitter_site text,
-    FOREIGN KEY(scrape_id) REFERENCES ads(id) 
+from constants import (
+    SQL_CREATE_ADS_TABLE,
+    SQL_CREATE_HOMES_TABLE
 )
-"""
 
 def scrape_sources(sites):
     '''Sets the top level site scraping pipeline in motion by calling extract.py
     on all the websites listed in the sites dictionary
     
     Args:
-        sites (dict[str:str]): key : value pairs are <site name> : <site url>
+        sites (dict[str:str]): key-value pairs are <site name>-<site url>
     '''
     # Start extract.py to begin pipeline
     print(f'\nBEGINNING PRIMARY SCRAPE FOR\n~~~~~~~~~~~~~~~~~~~~~\n{sites}\n')
@@ -101,9 +60,6 @@ def scrape_homes(secondary_ids):
 def main():
     # Check for database 
     db_file = Path.cwd() / 'analyses' / 'scrapes.db'
-    if not db_file.exists():
-        raise FileNotFoundError('Please initialize the database by creating \
-            the file "scrapes.db" in the analyses folder')
 
     # Check if tables exist, create them if they don't
     conn = create_connection(db_file)
@@ -143,5 +99,11 @@ def main():
     
 
 if __name__ == '__main__':
-    main()
+    i = 0 
+    while True:
+        print(f'\n\nBEGINNING SCRAPE {i}\n\n')
+        main()
+        print(f'\n\nSCRAPE {i} COMPLELTE\n\n')
+        time.sleep(60)
+        i += 1
     
