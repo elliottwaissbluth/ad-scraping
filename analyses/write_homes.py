@@ -31,29 +31,10 @@ tags = get_meta_tags_from_html(html_path)
 
 # Establish connection with database
 db_file = Path.cwd() / 'analyses' / 'scrapes.db'
-
-# Create homes table if it doesn't exist
-sql_create_homes_table = """
-    CREATE TABLE IF NOT EXISTS homes (
-        id integer PRIMARY KEY,
-        scrape_id integer NOT NULL,
-        name text NOT NULL,
-        date text NOT NULL,
-        url text NOT NULL,
-        filename text NOT NULL,
-        keywords text,
-        description text,
-        title text,
-        og_title text,
-        og_site_name text,
-        og_description text,
-        twitter_keywords text,
-        twitter_description text,
-        twitter_title text,
-        twitter_site text,
-        FOREIGN KEY(scrape_id) REFERENCES ads(id) 
-    )
-    """
+conn = create_connection(db_file)
+if conn is None:
+    raise RuntimeError('Database connection error, could not perform \
+        secondary scrape')
 
 # Append tags to homes table
 insert_homes(conn, row_id, date, name, url, html_path, tags)
