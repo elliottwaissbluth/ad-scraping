@@ -22,15 +22,9 @@ parser.add_argument('-s', type=str, help='dictionary of site names/urls')
 args = parser.parse_args()
 sites = ast.literal_eval(args.s)
 
-print('in scrape!')
-print(sites)
-
 # Get names and urls from sites dictionary
 names = list(sites.keys())
 urls  = list(sites.values())
-
-print(names)
-print(urls)
 
 # Create directories for the site in the analysis folder if it doesn't exist
 # Path in analyses folder
@@ -48,7 +42,7 @@ if not datadir_path.exists():
     os.mkdir(datadir_path / 'screenshots')
 
 
-NUM_BROWSERS = 4
+NUM_BROWSERS = min(16, len(sites))
 
 # Loads the default ManagerParams
 # and NUM_BROWSERS copies of the default BrowserParams
@@ -86,7 +80,7 @@ manager_params.log_path = Path("./datadir/openwpm.log")
 # manager_params.process_watchdog = True
 
 def get_suffix(url, sites):
-    '''Uses name, current date and time as string as suffix. Gathers name by
+    '''Uses name, current date, and time as suffix. Gathers name by
     reverse searching the sites dictionary.
     
     Suffix structure:
@@ -97,8 +91,6 @@ def get_suffix(url, sites):
     now = datetime.now()
     now = now.strftime('%Y-%m-%d-%H-%M-%S')
     suffix = f'__{name}__{now}'
-    print(f'suffix !! : {suffix}')
-
     return suffix
 
 

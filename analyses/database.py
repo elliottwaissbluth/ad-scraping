@@ -141,7 +141,6 @@ def insert_homes(conn, scrape_id, date, name, url, filename, tags):
         'url' : url,
         'filename' : filename,
     }
-    print(f'tags: {tags}')
     for k,v in tags.items():
         data[k] = v
     
@@ -154,8 +153,6 @@ def insert_homes(conn, scrape_id, date, name, url, filename, tags):
         INSERT INTO homes {cols}
         VALUES {vals}
     """
-    print(f'homes sql: {sql}')
-    print(f'data_to_insert: {data_to_insert}')
     cur = conn.cursor()
     cur.execute(sql, data_to_insert)
     conn.commit()
@@ -212,7 +209,6 @@ def select_scrape_ids(conn, table = 'ads'):
     # close cursor
     cur.close()
 
-    print(f'IDs present in "{table}": {ids}') 
     return ids
 
 def select_row_from_ads(conn, row_id):

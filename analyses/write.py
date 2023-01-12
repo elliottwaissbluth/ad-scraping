@@ -29,10 +29,6 @@ args = parser.parse_args()
 date = args.d
 analysis_path = args.f
 name = args.n
-print('!! IN write.py !!')
-print(f'date: {date}')
-print(f'analysis_path: {analysis_path}')
-print(f'name: {name}')
 
 # Open JSON and gather data
 json_path = Path(analysis_path) / 'sources' / date

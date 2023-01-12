@@ -3,7 +3,7 @@ import csv
 
 def export_database_to_csv():
     '''Exports the two tables in scrapes.db as CSVs, stored at:
-    ad-scraping / CSVs
+    ad-scraping / CSVs / <table_name(s)>.csv
     
     Written by ChatGPT
     '''

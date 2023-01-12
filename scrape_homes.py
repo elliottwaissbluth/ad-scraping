@@ -17,16 +17,7 @@ parser.add_argument('-s', type=str, help='dict of queue_IDs and urls to scrape')
 args = parser.parse_args()
 to_scrape = ast.literal_eval(args.s)
 to_scrape = {v: k for k, v in to_scrape.items()}
-print(f'to_scrape in scrape_homes: {to_scrape}')
-
 sites = list(to_scrape.keys())
-
-print(f'sites: {sites}')
-
-# FOR PROTOTYPING
-# sites = ['https://betterprogramming.pub/introduction-to-message-queue-with-rabbitmq-python-639e397cb668']
-# name = 'test'
-# date = '2022-10-23-14-54-12'
 
 # Path in OpenWPM data_directory
 datadir_path = Path.cwd() / 'datadir' / 'scraped_ad_sources'
@@ -35,7 +26,7 @@ if not datadir_path.exists():
     os.mkdir(datadir_path / 'sources')
     os.mkdir(datadir_path / 'screenshots')
 
-NUM_BROWSERS = 2
+NUM_BROWSERS = min(16, len(sites))
 
 # Loads the default ManagerParams
 # and NUM_BROWSERS copies of the default BrowserParams
@@ -76,11 +67,14 @@ def get_suffix(url, to_scrape):
     '''Produces an identifying suffix to tag onto the saved html file for future
     processing. Creates the suffix in the following form:
     
-    (auto_generated_by_OpenWPM)__<ID>__.html
+    __<ID>__
     
     Args:
         url (str): url of site being scraped
         to_scrape(dict[str:str]): dict with key:value url:ID
+    
+    Returns:
+        str: suffix in form __<ID>__
     '''
     return '__' + to_scrape[url] + '__'
 
