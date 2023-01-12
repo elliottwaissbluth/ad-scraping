@@ -38,7 +38,7 @@ To use ad-scraping, you must have OpenWPM installed. See their [repository](http
    python3 main.py
    ```
 4. Wait for scraper to gather data. The scraper will run in a loop until manually stopped with a keyboard interrupt, ```Ctrl+C```, or the system runs out of memory.
-5. Export the tables to CSV format.
+5. Export the tables to CSV format. You will find your CSVs in the ```CSVs``` folder afterwards.
    ```sh
    python3 export_data_to_csv.py
    ```
