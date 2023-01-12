@@ -13,7 +13,7 @@ To use ad-scraping, you must have OpenWPM installed. See their [repository](http
 ### Installation
 
 1. [Install OpenWPM](https://github.com/openwpm/OpenWPM#installation)
-2. Clone the repo
+2. Clone this repo
    ```sh
    git clone https://github.com/elliottwaissbluth/ad-scraping.git
    ```
@@ -81,7 +81,7 @@ All of these fields are gathered by analyzing HTML scraped from each site. See `
 | destinationUrl        | text     | Advertisement URL.                                                       |
 
 ### homes
-After a row is populated in **ads**, there are three fields (mfSponsor, adurls, and destinationUrl) that might contain links to an advertiser's domain. Sometimes, the URL itself is not descriptive enough to understand what is being advertised, or who the advertiser is. To mitigate this knowledge gap, we take the URLs found in these fields and point the scraper towards them. We refer to this as a *secondary scrape* as opposed to the top level *primary scrape* that populated the **ads** table. Note that every scrape in **homes** is linked to a primary scrape in **ads** by the ```scrape_id``` field.
+After a row is populated in **ads**, there are three fields (mfSponsor, adurls, and destinationUrl) that might contain links to an advertiser's domain. Sometimes, the URL itself is not descriptive enough to understand what is being advertised or who the advertiser is. To mitigate this knowledge gap, we take the URLs found in these fields and point the scraper towards them. We refer to this as a *secondary scrape* as opposed to the top level *primary scrape* that populated the **ads** table. Note that every scrape in **homes** is linked to a primary scrape in **ads** by the ```scrape_id``` field.
 
 | **field**           | **type** | **description**                                       |
 |---------------------|----------|-------------------------------------------------------|
