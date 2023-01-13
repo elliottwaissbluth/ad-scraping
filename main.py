@@ -103,7 +103,7 @@ if __name__ == '__main__':
     while True:
         print(f'\n\nBEGINNING SCRAPE {i}\n\n')
         main()
-        print(f'\n\nSCRAPE {i} COMPLELTE\n\n')
-        time.sleep(60)
+        print(f'\n\nSCRAPE {i} COMPLETE\n\n')
+        time.sleep(10)
         i += 1
     
