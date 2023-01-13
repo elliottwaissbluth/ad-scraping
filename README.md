@@ -19,7 +19,7 @@ To use ad-scraping, you must have OpenWPM installed. See their [repository](http
    ```
 3. Copy the ad-scraping files from their directory to the ```OpenWPM``` directory.
    ```sh
-   cp -a /ad-scraping/. /OpenWPM/
+   cp -a ./ad-scraping/* ./OpenWPM/
    ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
